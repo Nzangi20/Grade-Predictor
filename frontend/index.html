@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradely AI | Student Performance Predictor & Dashboard</title>
+    <meta name="description" content="Predict student academic outcomes and visualize performance factors with machine learning analytics.">
+    
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ================= AUTH VIEW ================= -->
+    <div id="auth-view" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>Gradely AI</span>
+                </div>
+                <h2>Predicting Student Success</h2>
+                <p id="auth-subtitle">Login to access your prediction dashboard</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <div class="input-group">
+                    <label for="login-username"><i class="fa-solid fa-user"></i> Username</label>
+                    <input type="text" id="login-username" placeholder="Enter your username" required>
+                </div>
+                <div class="input-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label for="login-password" style="margin-bottom: 0;"><i class="fa-solid fa-lock"></i> Password</label>
+                        <a href="#" id="switch-to-forgot" style="font-size: 0.8rem; color: var(--primary); text-decoration: none; transition: var(--transition);">Forgot password?</a>
+                    </div>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Login</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <p class="auth-switch">Don't have an account? <a href="#" id="switch-to-register">Register here</a></p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form hidden">
+                <div class="input-group">
+                    <label for="register-username"><i class="fa-solid fa-user"></i> Username</label>
+                    <input type="text" id="register-username" placeholder="Choose a username" required>
+                </div>
+                <div class="input-group">
+                    <label for="register-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="register-email" placeholder="name@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="register-password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="register-password" placeholder="Choose a password (min 6 chars)" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Register</span>
+                    <i class="fa-solid fa-user-plus"></i>
+                </button>
+                <p class="auth-switch">Already have an account? <a href="#" id="switch-to-login">Login here</a></p>
+            </form>
+
+            <!-- Forgot Password Form -->
+            <form id="forgot-form" class="auth-form hidden">
+                <div class="input-group">
+                    <label for="forgot-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="forgot-email" placeholder="Enter your email address" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Send Reset Link</span>
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+                <p class="auth-switch">Back to safety? <a href="#" id="forgot-back-to-login">Login here</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD APP VIEW ================= -->
+    <div id="app-view" class="app-container hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Gradely AI</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="#" class="nav-link active" data-target="dashboard-section">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Overview</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" data-target="predict-section">
+                            <i class="fa-solid fa-square-plus"></i>
+                            <span>New Prediction</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link" data-target="history-section">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>History Log</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar"><i class="fa-solid fa-circle-user"></i></div>
+                    <div class="user-info">
+                        <span id="user-display-name" class="username">Guest User</span>
+                        <span class="role">Instructor</span>
+                    </div>
+                </div>
+                <div class="theme-and-logout">
+                    <button id="theme-toggle" class="btn-icon" title="Toggle Light/Dark Theme">
+                        <i class="fa-solid fa-sun"></i>
+                    </button>
+                    <button id="logout-btn" class="btn-icon logout" title="Sign Out">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <main class="main-content">
+            
+            <header class="content-header">
+                <div>
+                    <h1 id="section-title">Dashboard Overview</h1>
+                    <p class="section-subtitle" id="section-subtitle">Real-time performance analytics and prediction summaries.</p>
+                </div>
+                <div class="header-actions">
+                    <span class="date-badge"><i class="fa-regular fa-calendar"></i> <span id="current-date">June 8, 2026</span></span>
+                </div>
+            </header>
+
+            <!-- ================= SECTION: OVERVIEW ================= -->
+            <section id="dashboard-section" class="content-section">
+                <!-- Statistics Row -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon predictions-icon"><i class="fa-solid fa-brain"></i></div>
+                        <div class="stat-details">
+                            <h3>Total Predictions</h3>
+                            <span class="stat-value" id="stat-total-predictions">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon grade-icon"><i class="fa-solid fa-award"></i></div>
+                        <div class="stat-details">
+                            <h3>Avg. Predicted Grade</h3>
+                            <span class="stat-value" id="stat-avg-grade">0.0<span class="out-of">/20</span></span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon risk-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-details">
+                            <h3>At Risk Students</h3>
+                            <span class="stat-value" id="stat-risk-percentage">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <div class="chart-card large">
+                        <div class="chart-header">
+                            <h4>Prediction History & Trends</h4>
+                            <p>Timeline of G3 student grades predictions</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="predictionHistoryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h4>Grade Categories</h4>
+                            <p>Distribution of student risks</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="gradeDistributionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h4>Study Habits vs predicted Grade</h4>
+                            <p>Average predicted grade based on study hours</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="studyHabitsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= SECTION: PREDICT ================= -->
+            <section id="predict-section" class="content-section hidden">
+                <div class="predict-layout">
+                    <!-- Form Container -->
+                    <div class="form-container-card">
+                        <div class="form-wizard-header">
+                            <div class="step-indicator active" data-step="1">
+                                <span class="step-num">1</span>
+                                <span class="step-name">Academic</span>
+                            </div>
+                            <div class="step-line"></div>
+                            <div class="step-indicator" data-step="2">
+                                <span class="step-num">2</span>
+                                <span class="step-name">Personal & Family</span>
+                            </div>
+                            <div class="step-line"></div>
+                            <div class="step-indicator" data-step="3">
+                                <span class="step-num">3</span>
+                                <span class="step-name">Lifestyle</span>
+                            </div>
+                        </div>
+
+                        <form id="student-predict-form">
+                            <!-- STEP 1: ACADEMIC -->
+                            <div class="form-step active" id="step-1">
+                                <h3>Academic Performance</h3>
+                                <p class="step-description">Enter recent student performance parameters and academic support details.</p>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group-field">
+                                        <label for="G1">G1 Grade (0 - 20) <i class="fa-solid fa-circle-info" title="First period grade"></i></label>
+                                        <input type="number" id="G1" min="0" max="20" placeholder="e.g. 12" required>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="G2">G2 Grade (0 - 20) <i class="fa-solid fa-circle-info" title="Second period grade"></i></label>
+                                        <input type="number" id="G2" min="0" max="20" placeholder="e.g. 13" required>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="failures">Past Failures (0 - 3) <i class="fa-solid fa-circle-info" title="Number of past class failures"></i></label>
+                                        <input type="number" id="failures" min="0" max="3" placeholder="e.g. 0" required>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="studytime">Weekly Study Time</label>
+                                        <select id="studytime" required>
+                                            <option value="1">&lt; 2 Hours</option>
+                                            <option value="2" selected>2 - 5 Hours</option>
+                                            <option value="3">5 - 10 Hours</option>
+                                            <option value="4">&gt; 10 Hours</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="schoolsup">Extra School Support</label>
+                                        <select id="schoolsup" required>
+                                            <option value="no" selected>No</option>
+                                            <option value="yes">Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="famsup">Family Educational Support</label>
+                                        <select id="famsup" required>
+                                            <option value="no">No</option>
+                                            <option value="yes" selected>Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="paid">Extra Paid Classes</label>
+                                        <select id="paid" required>
+                                            <option value="no" selected>No</option>
+                                            <option value="yes">Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="higher">Wants Higher Education</label>
+                                        <select id="higher" required>
+                                            <option value="yes" selected>Yes</option>
+                                            <option value="no">No</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-navigation">
+                                    <span></span> <!-- Placeholder -->
+                                    <button type="button" class="btn btn-primary next-step-btn">
+                                        <span>Next Step</span>
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- STEP 2: PERSONAL & FAMILY -->
+                            <div class="form-step hidden" id="step-2">
+                                <h3>Personal & Family Background</h3>
+                                <p class="step-description">Student demographics, parent occupations, and home conditions.</p>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group-field">
+                                        <label for="age">Age (15 - 22)</label>
+                                        <input type="number" id="age" min="15" max="22" placeholder="e.g. 17" required>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="school">School</label>
+                                        <select id="school" required>
+                                            <option value="GP" selected>Gabriel Pereira (GP)</option>
+                                            <option value="MS">Mousinho da Silveira (MS)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="sex">Gender</label>
+                                        <select id="sex" required>
+                                            <option value="F" selected>Female</option>
+                                            <option value="M">Male</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="address">Address Type</label>
+                                        <select id="address" required>
+                                            <option value="U" selected>Urban</option>
+                                            <option value="R">Rural</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="famsize">Family Size</label>
+                                        <select id="famsize" required>
+                                            <option value="GT3" selected>Greater than 3 members</option>
+                                            <option value="LE3">Less or equal to 3 members</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="Pstatus">Parental Cohabitation</label>
+                                        <select id="Pstatus" required>
+                                            <option value="T" selected>Living Together</option>
+                                            <option value="A">Apart</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="Medu">Mother's Education</label>
+                                        <select id="Medu" required>
+                                            <option value="0">None</option>
+                                            <option value="1">Primary Education (4th Grade)</option>
+                                            <option value="2">5th to 9th Grade</option>
+                                            <option value="3">Secondary Education</option>
+                                            <option value="4" selected>Higher Education</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="Fedu">Father's Education</label>
+                                        <select id="Fedu" required>
+                                            <option value="0">None</option>
+                                            <option value="1">Primary Education (4th Grade)</option>
+                                            <option value="2">5th to 9th Grade</option>
+                                            <option value="3">Secondary Education</option>
+                                            <option value="4" selected>Higher Education</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="Mjob">Mother's Job</label>
+                                        <select id="Mjob" required>
+                                            <option value="teacher">Teacher</option>
+                                            <option value="health">Health Services</option>
+                                            <option value="services">Civil Services</option>
+                                            <option value="at_home">At Home</option>
+                                            <option value="other" selected>Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="Fjob">Father's Job</label>
+                                        <select id="Fjob" required>
+                                            <option value="teacher">Teacher</option>
+                                            <option value="health">Health Services</option>
+                                            <option value="services">Civil Services</option>
+                                            <option value="at_home">At Home</option>
+                                            <option value="other" selected>Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="guardian">Guardian</label>
+                                        <select id="guardian" required>
+                                            <option value="mother" selected>Mother</option>
+                                            <option value="father">Father</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-navigation">
+                                    <button type="button" class="btn btn-secondary prev-step-btn">
+                                        <i class="fa-solid fa-arrow-left"></i>
+                                        <span>Back</span>
+                                    </button>
+                                    <button type="button" class="btn btn-primary next-step-btn">
+                                        <span>Next Step</span>
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- STEP 3: LIFESTYLE & BEHAVIOR -->
+                            <div class="form-step hidden" id="step-3">
+                                <h3>Lifestyle & Habits</h3>
+                                <p class="step-description">Absences, social activity levels, home relationships, and health conditions.</p>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group-field">
+                                        <label for="absences">Absences (0 - 93)</label>
+                                        <input type="number" id="absences" min="0" max="93" placeholder="e.g. 2" required>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="activities">Extra-curricular Activities</label>
+                                        <select id="activities" required>
+                                            <option value="no">No</option>
+                                            <option value="yes" selected>Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="nursery">Attended Nursery School</label>
+                                        <select id="nursery" required>
+                                            <option value="yes" selected>Yes</option>
+                                            <option value="no">No</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="internet">Internet Access at Home</label>
+                                        <select id="internet" required>
+                                            <option value="yes" selected>Yes</option>
+                                            <option value="no">No</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="romantic">In Romantic Relationship</label>
+                                        <select id="romantic" required>
+                                            <option value="no" selected>No</option>
+                                            <option value="yes">Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="traveltime">Travel Time to School</label>
+                                        <select id="traveltime" required>
+                                            <option value="1" selected>&lt; 15 Mins</option>
+                                            <option value="2">15 - 30 Mins</option>
+                                            <option value="3">30 Mins - 1 Hour</option>
+                                            <option value="4">&gt; 1 Hour</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="reason">Reason for Choosing School</label>
+                                        <select id="reason" required>
+                                            <option value="home" selected>Close to Home</option>
+                                            <option value="reputation">School Reputation</option>
+                                            <option value="course">Course Preference</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="famrel">Family Relationship Quality</label>
+                                        <select id="famrel" required>
+                                            <option value="1">1 (Very Poor)</option>
+                                            <option value="2">2 (Poor)</option>
+                                            <option value="3">3 (Average)</option>
+                                            <option value="4" selected>4 (Good)</option>
+                                            <option value="5">5 (Excellent)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="freetime">Free Time After School</label>
+                                        <select id="freetime" required>
+                                            <option value="1">1 (Very Low)</option>
+                                            <option value="2">2 (Low)</option>
+                                            <option value="3" selected>3 (Normal)</option>
+                                            <option value="4">4 (High)</option>
+                                            <option value="5">5 (Very High)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="goout">Going Out with Friends</label>
+                                        <select id="goout" required>
+                                            <option value="1">1 (Very Low)</option>
+                                            <option value="2">2 (Low)</option>
+                                            <option value="3" selected>3 (Normal)</option>
+                                            <option value="4">4 (High)</option>
+                                            <option value="5">5 (Very High)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="Dalc">Workday Alcohol Intake</label>
+                                        <select id="Dalc" required>
+                                            <option value="1" selected>1 (Very Low)</option>
+                                            <option value="2">2 (Low)</option>
+                                            <option value="3">3 (Medium)</option>
+                                            <option value="4">4 (High)</option>
+                                            <option value="5">5 (Very High)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="Walc">Weekend Alcohol Intake</label>
+                                        <select id="Walc" required>
+                                            <option value="1" selected>1 (Very Low)</option>
+                                            <option value="2">2 (Low)</option>
+                                            <option value="3">3 (Medium)</option>
+                                            <option value="4">4 (High)</option>
+                                            <option value="5">5 (Very High)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-field">
+                                        <label for="health">Current Health Status</label>
+                                        <select id="health" required>
+                                            <option value="1">1 (Very Bad)</option>
+                                            <option value="2">2 (Bad)</option>
+                                            <option value="3">3 (Fair)</option>
+                                            <option value="4">4 (Good)</option>
+                                            <option value="5" selected>5 (Very Good)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-navigation">
+                                    <button type="button" class="btn btn-secondary prev-step-btn">
+                                        <i class="fa-solid fa-arrow-left"></i>
+                                        <span>Back</span>
+                                    </button>
+                                    <button type="submit" class="btn btn-success" id="submit-prediction-btn">
+                                        <span>Run Predictor</span>
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Result Sidebar Widget -->
+                    <div class="result-sidebar">
+                        <div class="result-placeholder" id="prediction-result-placeholder">
+                            <i class="fa-solid fa-chart-bar-skewed"></i>
+                            <h4>Ready for Prediction</h4>
+                            <p>Fill out the form sections and click "Run Predictor" to display grade estimations and recommendations.</p>
+                        </div>
+                        
+                        <div class="result-card-widget hidden" id="prediction-result-widget">
+                            <div class="widget-header">
+                                <span class="badge" id="result-status-badge">Good</span>
+                                <h4>Evaluation Outcome</h4>
+                            </div>
+                            
+                            <div class="score-circle-container">
+                                <div class="score-radial">
+                                    <div class="score-value" id="result-grade-value">14.2</div>
+                                    <div class="score-label">Predicted G3</div>
+                                </div>
+                            </div>
+
+                            <div class="recommendations-block">
+                                <h5><i class="fa-solid fa-circle-check"></i> Actionable Insights</h5>
+                                <ul id="result-recommendations-list">
+                                    <!-- Dynamic list items -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= SECTION: HISTORY ================= -->
+            <section id="history-section" class="content-section hidden">
+                <div class="table-card">
+                    <div class="table-header">
+                        <h4>Inference Logs</h4>
+                        <button id="clear-search-btn" class="btn btn-secondary btn-sm hidden">Clear Filter</button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Predicted Grade (G3)</th>
+                                    <th>Status</th>
+                                    <th>Academic (G1 / G2)</th>
+                                    <th>Absences / Failures</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <tr>
+                                    <td colspan="6" class="table-empty">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                        <p>No predictions logged yet. Run a prediction to see history here.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
